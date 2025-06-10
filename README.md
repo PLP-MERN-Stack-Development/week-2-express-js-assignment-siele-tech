@@ -1,63 +1,160 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19743385&assignment_repo_type=AssignmentRepo)
-# Express.js RESTful API Assignment
+# Express.js Product API
 
-This assignment focuses on building a RESTful API using Express.js, implementing proper routing, middleware, and error handling.
+A RESTful API built with Express.js for managing products. This API implements standard CRUD operations, middleware, error handling, and advanced features like filtering, pagination, and search.
 
-## Assignment Overview
+## 🚀 Features
 
-You will:
-1. Set up an Express.js server
-2. Create RESTful API routes for a product resource
-3. Implement custom middleware for logging, authentication, and validation
-4. Add comprehensive error handling
-5. Develop advanced features like filtering, pagination, and search
+- RESTful CRUD operations for products
+- Custom middleware for logging and authentication
+- Comprehensive error handling
+- Advanced features:
+  - Filtering by category
+  - Pagination
+  - Search functionality
+  - Product statistics
 
-## Getting Started
-
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Install dependencies:
-   ```
-   npm install
-   ```
-4. Run the server:
-   ```
-   npm start
-   ```
-
-## Files Included
-
-- `Week2-Assignment.md`: Detailed assignment instructions
-- `server.js`: Starter Express.js server file
-- `.env.example`: Example environment variables file
-
-## Requirements
+## 📋 Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
-- Postman, Insomnia, or curl for API testing
 
-## API Endpoints
+## 🛠️ Installation
 
-The API will have the following endpoints:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/PLP-MERN-Stack-Development/week-2-express-js-assignment-siele-tech.git
+   cd week-2-express-js-assignment-siele-tech
+   ```
 
-- `GET /api/products`: Get all products
-- `GET /api/products/:id`: Get a specific product
-- `POST /api/products`: Create a new product
-- `PUT /api/products/:id`: Update a product
-- `DELETE /api/products/:id`: Delete a product
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Submission
+3. Start the server:
+   ```bash
+   npm start
+   ```
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+The server will start on http://localhost:3000
 
-1. Complete all the required API endpoints
-2. Implement the middleware and error handling
-3. Document your API in the README.md
-4. Include examples of requests and responses
+## 🔑 API Authentication
 
-## Resources
+All API endpoints require an API key to be included in the request headers:
+```
+X-API-Key: your-secret-api-key
+```
 
-- [Express.js Documentation](https://expressjs.com/)
-- [RESTful API Design Best Practices](https://restfulapi.net/)
-- [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
+## 📚 API Endpoints
+
+### Products
+
+#### Get All Products
+```
+GET /api/products
+```
+Query Parameters:
+- `category`: Filter by category
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10)
+
+Response:
+```json
+{
+  "total": 3,
+  "page": 1,
+  "limit": 10,
+  "products": [...]
+}
+```
+
+#### Get Product by ID
+```
+GET /api/products/:id
+```
+
+#### Create Product
+```
+POST /api/products
+```
+Request Body:
+```json
+{
+  "name": "Product Name",
+  "description": "Product Description",
+  "price": 99.99,
+  "category": "electronics",
+  "inStock": true
+}
+```
+
+#### Update Product
+```
+PUT /api/products/:id
+```
+Request Body: Same as Create Product
+
+#### Delete Product
+```
+DELETE /api/products/:id
+```
+
+### Search
+```
+GET /api/products/search?q=search_term
+```
+
+### Statistics
+```
+GET /api/products/stats
+```
+Response:
+```json
+{
+  "total": 3,
+  "inStock": 2,
+  "categories": {
+    "electronics": 2,
+    "kitchen": 1
+  }
+}
+```
+
+## 🔒 Error Handling
+
+The API uses standard HTTP status codes and returns error messages in the following format:
+```json
+{
+  "error": {
+    "message": "Error message",
+    "status": 400
+  }
+}
+```
+
+Common status codes:
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 404: Not Found
+- 500: Internal Server Error
+
+## 🧪 Testing
+
+You can test the API using tools like Postman, Insomnia, or curl. Here's an example using curl:
+
+```bash
+# Get all products
+curl -H "X-API-Key: your-secret-api-key" http://localhost:3000/api/products
+
+# Create a new product
+curl -X POST -H "X-API-Key: your-secret-api-key" -H "Content-Type: application/json" \
+  -d '{"name":"New Product","description":"Description","price":99.99,"category":"electronics","inStock":true}' \
+  http://localhost:3000/api/products
+```
+
+## 📝 License
+
+This project is licensed under the MIT License. 
