@@ -5,11 +5,22 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.API_KEY || 'your-secret-api-key';
+
+// Valid categories
+const VALID_CATEGORIES = ['electronics', 'kitchen', 'clothing', 'books', 'sports'];
+
+// Rate limiting configuration
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
 
 // Custom middleware for logging
 const loggerMiddleware = (req, res, next) => {
@@ -54,9 +65,11 @@ class ValidationError extends Error {
 }
 
 // Middleware setup
+app.use(cors());
 app.use(bodyParser.json());
 app.use(loggerMiddleware);
 app.use('/api', authMiddleware);
+app.use('/api', limiter);
 
 // Sample in-memory products database
 let products = [
@@ -91,15 +104,28 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Product API! Go to /api/products to see all products.');
 });
 
-// GET /api/products - Get all products with filtering and pagination
+// GET /api/products - Get all products with filtering, pagination, and sorting
 app.get('/api/products', (req, res) => {
-  const { category, page = 1, limit = 10 } = req.query;
+  const { category, page = 1, limit = 10, sort = 'name', order = 'asc' } = req.query;
   let filteredProducts = [...products];
 
   // Filter by category if provided
   if (category) {
+    if (!VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
     filteredProducts = filteredProducts.filter(p => p.category === category);
   }
+
+  // Sort products
+  filteredProducts.sort((a, b) => {
+    const aValue = a[sort];
+    const bValue = b[sort];
+    if (order === 'desc') {
+      return bValue > aValue ? 1 : -1;
+    }
+    return aValue > bValue ? 1 : -1;
+  });
 
   // Implement pagination
   const startIndex = (page - 1) * limit;
@@ -132,6 +158,14 @@ app.post('/api/products', (req, res, next) => {
     return next(new ValidationError('Missing required fields'));
   }
 
+  if (typeof price !== 'number' || price <= 0) {
+    return next(new ValidationError('Price must be a positive number'));
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return next(new ValidationError(`Category must be one of: ${VALID_CATEGORIES.join(', ')}`));
+  }
+
   const newProduct = {
     id: uuidv4(),
     name,
@@ -157,6 +191,14 @@ app.put('/api/products/:id', (req, res, next) => {
   // Validation
   if (!name || !description || !price || !category) {
     return next(new ValidationError('Missing required fields'));
+  }
+
+  if (typeof price !== 'number' || price <= 0) {
+    return next(new ValidationError('Price must be a positive number'));
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return next(new ValidationError(`Category must be one of: ${VALID_CATEGORIES.join(', ')}`));
   }
 
   const updatedProduct = {

@@ -1,29 +1,32 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19743385&assignment_repo_type=AssignmentRepo)
-# Express.js Product API
+# Product API
 
-A RESTful API built with Express.js for managing products. This API implements standard CRUD operations, middleware, error handling, and advanced features like filtering, pagination, and search.
+A RESTful API built with Express.js for managing products.
 
 ## 🚀 Features
 
-- RESTful CRUD operations for products
-- Custom middleware for logging and authentication
-- Comprehensive error handling
-- Advanced features:
-  - Filtering by category
-  - Pagination
-  - Search functionality
-  - Product statistics
+- CRUD operations for products
+- Authentication using API key
+- Request logging
+- Error handling
+- Filtering and pagination
+- Sorting by any field
+- Search functionality
+- Product statistics
+- Rate limiting
+- CORS support
+- Input validation
 
 ## 📋 Prerequisites
 
 - Node.js (v18 or higher)
-- npm or yarn
+- npm (Node Package Manager)
 
-## 🛠️ Installation
+## 🔧 Setup
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/PLP-MERN-Stack-Development/week-2-express-js-assignment-siele-tech.git
+   git clone <repository-url>
    cd week-2-express-js-assignment-siele-tech
    ```
 
@@ -32,32 +35,46 @@ A RESTful API built with Express.js for managing products. This API implements s
    npm install
    ```
 
-3. Start the server:
-   ```bash
-   npm start
+3. Create a `.env` file in the root directory with the following variables:
+   ```
+   PORT=3000
+   API_KEY=your-secret-api-key
    ```
 
-The server will start on http://localhost:3000
+4. Start the server:
+   ```bash
+   # Production mode
+   npm start
 
-## 🔑 API Authentication
+   # Development mode with auto-reload
+   npm run dev
+   ```
 
-All API endpoints require an API key to be included in the request headers:
+The server will start running on http://localhost:3000
+
+## 🔑 Authentication
+
+All API endpoints under `/api` require authentication using an API key. Include the API key in the request headers:
+
 ```
 X-API-Key: your-secret-api-key
 ```
 
-## 📚 API Endpoints
+## 📚 API Documentation
 
 ### Products
 
 #### Get All Products
-```
+```http
 GET /api/products
 ```
+
 Query Parameters:
-- `category`: Filter by category
-- `page`: Page number (default: 1)
-- `limit`: Items per page (default: 10)
+- `category` (optional): Filter products by category (must be one of: electronics, kitchen, clothing, books, sports)
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10)
+- `sort` (optional): Field to sort by (default: name)
+- `order` (optional): Sort order - 'asc' or 'desc' (default: asc)
 
 Response:
 ```json
@@ -65,24 +82,64 @@ Response:
   "total": 3,
   "page": 1,
   "limit": 10,
-  "products": [...]
+  "products": [
+    {
+      "id": "1",
+      "name": "Laptop",
+      "description": "High-performance laptop with 16GB RAM",
+      "price": 1200,
+      "category": "electronics",
+      "inStock": true
+    }
+    // ... more products
+  ]
 }
 ```
 
 #### Get Product by ID
-```
+```http
 GET /api/products/:id
 ```
 
-#### Create Product
+Response:
+```json
+{
+  "id": "1",
+  "name": "Laptop",
+  "description": "High-performance laptop with 16GB RAM",
+  "price": 1200,
+  "category": "electronics",
+  "inStock": true
+}
 ```
+
+#### Create Product
+```http
 POST /api/products
 ```
+
 Request Body:
 ```json
 {
-  "name": "Product Name",
-  "description": "Product Description",
+  "name": "New Product",
+  "description": "Product description",
+  "price": 99.99,
+  "category": "electronics",
+  "inStock": true
+}
+```
+
+Validation Rules:
+- All fields are required
+- Price must be a positive number
+- Category must be one of: electronics, kitchen, clothing, books, sports
+
+Response:
+```json
+{
+  "id": "generated-uuid",
+  "name": "New Product",
+  "description": "Product description",
   "price": 99.99,
   "category": "electronics",
   "inStock": true
@@ -90,25 +147,70 @@ Request Body:
 ```
 
 #### Update Product
-```
+```http
 PUT /api/products/:id
 ```
-Request Body: Same as Create Product
+
+Request Body:
+```json
+{
+  "name": "Updated Product",
+  "description": "Updated description",
+  "price": 149.99,
+  "category": "electronics",
+  "inStock": false
+}
+```
+
+Validation Rules:
+- All fields are required
+- Price must be a positive number
+- Category must be one of: electronics, kitchen, clothing, books, sports
+
+Response:
+```json
+{
+  "id": "product-id",
+  "name": "Updated Product",
+  "description": "Updated description",
+  "price": 149.99,
+  "category": "electronics",
+  "inStock": false
+}
+```
 
 #### Delete Product
-```
+```http
 DELETE /api/products/:id
 ```
 
-### Search
-```
-GET /api/products/search?q=search_term
+Response: 204 No Content
+
+### Search Products
+```http
+GET /api/products/search?q=search-term
 ```
 
-### Statistics
+Response:
+```json
+[
+  {
+    "id": "1",
+    "name": "Laptop",
+    "description": "High-performance laptop with 16GB RAM",
+    "price": 1200,
+    "category": "electronics",
+    "inStock": true
+  }
+  // ... matching products
+]
 ```
+
+### Product Statistics
+```http
 GET /api/products/stats
 ```
+
 Response:
 ```json
 {
@@ -121,9 +223,10 @@ Response:
 }
 ```
 
-## 🔒 Error Handling
+## ⚠️ Error Handling
 
 The API uses standard HTTP status codes and returns error messages in the following format:
+
 ```json
 {
   "error": {
@@ -133,26 +236,30 @@ The API uses standard HTTP status codes and returns error messages in the follow
 }
 ```
 
-Common status codes:
-- 200: Success
-- 201: Created
-- 400: Bad Request
-- 401: Unauthorized
+Common error codes:
+- 400: Bad Request (Validation Error)
+- 401: Unauthorized (Invalid API Key)
 - 404: Not Found
+- 429: Too Many Requests (Rate Limit Exceeded)
 - 500: Internal Server Error
+
+## 🔒 Rate Limiting
+
+The API implements rate limiting to prevent abuse:
+- 100 requests per 15 minutes per IP address
+- Exceeding the limit will result in a 429 Too Many Requests error
+
+## 🌐 CORS Support
+
+The API supports Cross-Origin Resource Sharing (CORS), allowing web clients to make requests from different domains.
 
 ## 🧪 Testing
 
-You can test the API using tools like Postman, Insomnia, or curl. Here's an example using curl:
+You can test the API using tools like Postman, Insomnia, or curl. Make sure to include the API key in the request headers for all API endpoints.
 
+Example curl command:
 ```bash
-# Get all products
 curl -H "X-API-Key: your-secret-api-key" http://localhost:3000/api/products
-
-# Create a new product
-curl -X POST -H "X-API-Key: your-secret-api-key" -H "Content-Type: application/json" \
-  -d '{"name":"New Product","description":"Description","price":99.99,"category":"electronics","inStock":true}' \
-  http://localhost:3000/api/products
 ```
 
 ## 📝 License
